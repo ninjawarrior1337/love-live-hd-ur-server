@@ -21,8 +21,8 @@ var outputDir = path.join(__dirname, "output");
 app.use(compression());
 
 if (!fs.existsSync(inputDir) || !fs.existsSync(outputDir)) {
-  fs.mkdir(inputDir);
-  fs.mkdir(outputDir);
+  fs.mkdirSync(inputDir);
+  fs.mkdirSync(outputDir);
 }
 
 for (file of fs.readdirSync(path.join(__dirname, "output"))) {
@@ -101,18 +101,15 @@ function waifu2xCard(card) {
         .spawn(
           "waifu2x-converter-cpp",
           [
-            "-s",
-            "2.0",
-            "-n",
+            "--scale_ratio",
+            "3.0",
+            "--noise_level",
             "3",
             "-i",
             `${path.join(__dirname, "input", card.id.toString())}.png`,
             "-o",
             `${path.join(__dirname, "output", card.id.toString())}.jpg`
-          ],
-          {
-            shell: true
-          }
+          ]
         )
         .on("close", () => {
           resolve();
