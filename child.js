@@ -20,7 +20,7 @@ var path = require("path");
 //   });
 
 
-  const waifu2x = child_process
+const waifu2x = child_process
   .spawn('waifu2x-converter-cpp', [
     "--scale_ratio",
     "3.0",
@@ -38,10 +38,10 @@ var path = require("path");
     console.log(msg);
   })
 
-  waifu2x.stdout.on('data', (data) => {
-    console.log(`stdout: ${data}`);
-  });
-  
-  waifu2x.on('close', (code) => {
-    console.log(`child process exited with code ${code}`);
-  });
+waifu2x.stdout.on('data', (data) => {
+  console.log(`stdout: ${data}`);
+});
+
+waifu2x.on('close', (code) => {
+  console.log(`child process exited with code ${code}`);
+});

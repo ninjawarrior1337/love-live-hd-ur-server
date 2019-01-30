@@ -1,10 +1,10 @@
 var compression = require("compression");
 var app = require("express")();
-var request = require("request");
 var fs = require("fs");
-var child_process = require("child_process");
 var path = require("path");
 var _ = require("lodash");
+var { getCard, downloadCard, waifu2xCard } = require('./normalcardhandler')
+var { getUrPair } = require('./urcardhandler')
 
 var lifx = require("node-lifx");
 var lclient = new lifx.Client();
@@ -13,12 +13,8 @@ lclient.init({ lights: ["192.168.1.86"] });
 // var PngQuant = require("pngquant");
 // var pngquanter = new PngQuant([192, "--quality", "60-90", "-"]);
 
-var validSchool = ["Uranohoshi Girls' High School", "Otonokizaka Academy"];
-
 var inputDir = path.join(__dirname, "input");
 var outputDir = path.join(__dirname, "output");
-
-app.use(compression());
 
 if (!fs.existsSync(inputDir) || !fs.existsSync(outputDir)) {
   fs.mkdirSync(inputDir);
@@ -29,124 +25,74 @@ for (file of fs.readdirSync(path.join(__dirname, "output"))) {
   fs.unlinkSync(path.join(__dirname, "output", file));
 }
 
-let getCard = () => {
-  const school = _.random(100) < 80 ? validSchool[0] : validSchool[1];
-  var options = {
-    method: "GET",
-    url: "http://schoolido.lu/api/cards/",
-    qs: {
-      ordering: "random",
-      rarity: "SSR,UR",
-      name:
-        school == "Otonokizaka Academy" ? "Minami Kotori,Kousaka Honoka" : "",
-      idol_school: school
-    }
-  };
-  return new Promise((resolve, reject) => {
-    request(options, function(error, response, body) {
-      if (error) throw new Error(error);
-      if (error) reject(error);
-
-      resolve(JSON.parse(body).results[0]);
-    });
-  });
-};
-
-function downloadCard(card) {
-  return new Promise(async (resolve, reject) => {
-    if (fs.existsSync(`input/${card.id}.png`)) {
-      resolve();
-      return;
-    }
-    request("http:" + card.clean_ur_idolized).pipe(
-      fs
-        .createWriteStream(path.join(inputDir, `${card.id}.png`), {
-          autoClose: true
-        })
-        .on("close", () => resolve())
-    );
-  });
-}
-
-function waifu2xCard(card) {
-  if (process.platform === "win32") {
-    return new Promise((resolve, reject) => {
-      child_process
-        .execFile(
-          path.join(__dirname, "waifu2x-caffe", "waifu2x-caffe-cui.exe"),
-          [
-            "-s",
-            "3.0",
-            "-n",
-            "3",
-            "-i",
-            `${path.join(inputDir, card.id.toString())}.png`,
-            "-o",
-            `${path.join(outputDir, card.id.toString())}.jpg`
-          ],
-          {
-            windowsHide: true
-          }
-        )
-        .on("close", () => {
-          resolve();
-        })
-        .on("message", msg => {
-          console.log(msg);
-        });
-    });
-  } else {
-    return new Promise((resolve, reject) => {
-      child_process
-        .spawn(
-          "waifu2x-converter-cpp",
-          [
-            "--scale_ratio",
-            "3.0",
-            "--noise_level",
-            "3",
-            "-i",
-            `${path.join(__dirname, "input", card.id.toString())}.png`,
-            "-o",
-            `${path.join(__dirname, "output", card.id.toString())}.jpg`
-          ]
-        )
-        .on("close", () => {
-          resolve();
-        })
-        .on("message", msg => {
-          console.log(msg);
-        });
-    });
-  }
-}
-
 app.get("/", async (req, res) => {
-  //   console.log(await getCard());
-  res.set("Content-Type", "image/jpeg");
-  var card = await getCard();
-  //   if(card.idol.name == "Yazawa Nico")
-  console.log("Downloading Card");
-  await downloadCard(card);
-  console.log("Enhancing Card");
-  await waifu2xCard(card);
+  try {
+    res.set("Content-Type", "image/jpeg");
+    console.log("Selecting Card: Normal");
+    var card = await getCard();
+    console.log("Downloading Card: Normal");
+    await downloadCard(card);
+    console.log("Enhancing Card: Normal");
+    await waifu2xCard(card);
 
-  // var cardStream = fs.createReadStream(
-  //   `${path.join(outputDir, card.id.toString())}.png`
-  // );
+    await res.sendFile(
+      `${path.join(__dirname, "output", card.id.toString())}.jpg`
+    );
+  }
+  catch
+  {
+    res.send("download failed, try again in a few seconds")
+  }
 
-  // cardStream.pipe(pngquanter).pipe(res);
-
-  await res.sendFile(
-    `${path.join(__dirname, "output", card.id.toString())}.jpg`
-  );
   console.log(card.id + ": Done Encoding");
 
   if (req.query.changeLight == "true") {
     changeLightColor(undefined, card.idol.name);
   }
+});
 
-  //   res.send(`<img src=${"http:" + card.clean_ur_idolized}></img>`);
+app.get("/urpair", async (req, res) => {
+  // res.set("Content-Type", "image/jpeg");
+  try {
+    var card = await getUrPair()
+    var idolized = _.sample([true, false])
+    if (idolized) {
+      if (card.ur_pair.reverse_display_idolized) {
+        res.send(`<img data=${card.ur_pair.reverse_display_idolized} src=${card.ur_pair.card.clean_ur_idolized}\>` + `<img src=${card.clean_ur_idolized}\>`)
+      }
+      else {
+        res.send(`<img src=${card.clean_ur_idolized}\>` + `<img src=${card.ur_pair.card.clean_ur_idolized}\>`)
+      }
+    }
+    else {
+      if (card.ur_pair.reverse_display) {
+        res.send(`<img data=${card.ur_pair.reverse_display} src=${card.ur_pair.card.clean_ur}\>` + `<img src=${card.clean_ur}\>`)
+      }
+      else {
+        res.send(`<img src=${card.clean_ur}\>` + `<img src=${card.ur_pair.card.clean_ur}\>`)
+      }
+    }
+    console.log(`${card.id}: ${card.ur_pair.reverse_display_idolized}`)
+  }
+  catch
+  {
+    res.send("failed, try again in a few seconds")
+  }
+
+  // console.log("Downloading Card: Normal");
+  // await downloadCard(card);
+  // console.log("Enhancing Card: Normal");
+  // await waifu2xCard(card);
+
+  // await res.sendFile(
+  //   `${path.join(__dirname, "output", card.id.toString())}.jpg`
+  // );
+
+  // console.log(card.id + ": Done Encoding");
+
+  // if (req.query.changeLight == "true") {
+  //   changeLightColor(undefined, card.idol.name);
+  // }
 });
 
 function changeLightColor(hex, idol) {
@@ -197,6 +143,10 @@ function changeLightColor(hex, idol) {
 }
 
 app.get("/light", async (req, res) => {
+  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+  console.log(ip)
+
   res.send(
     await changeLightColor((hex = req.query.hex), (idol = req.query.idol))
   );
