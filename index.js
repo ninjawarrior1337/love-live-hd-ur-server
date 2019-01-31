@@ -4,7 +4,7 @@ var fs = require("fs");
 var path = require("path");
 var _ = require("lodash");
 var { getCard, downloadCard, waifu2xCard } = require('./normalcardhandler')
-var { getUrPair } = require('./urcardhandler')
+var { getUrPair, downloadAndMergePair, waifu2xPairCard } = require('./urcardhandler')
 
 var lifx = require("node-lifx");
 var lclient = new lifx.Client();
@@ -55,23 +55,27 @@ app.get("/urpair", async (req, res) => {
   // res.set("Content-Type", "image/jpeg");
   try {
     var card = await getUrPair()
-    var idolized = _.sample([true, false])
-    if (idolized) {
-      if (card.ur_pair.reverse_display_idolized) {
-        res.send(`<img data=${card.ur_pair.reverse_display_idolized} src=${card.ur_pair.card.clean_ur_idolized}\>` + `<img src=${card.clean_ur_idolized}\>`)
-      }
-      else {
-        res.send(`<img src=${card.clean_ur_idolized}\>` + `<img src=${card.ur_pair.card.clean_ur_idolized}\>`)
-      }
-    }
-    else {
-      if (card.ur_pair.reverse_display) {
-        res.send(`<img data=${card.ur_pair.reverse_display} src=${card.ur_pair.card.clean_ur}\>` + `<img src=${card.clean_ur}\>`)
-      }
-      else {
-        res.send(`<img src=${card.clean_ur}\>` + `<img src=${card.ur_pair.card.clean_ur}\>`)
-      }
-    }
+    await downloadAndMergePair(card)
+    await waifu2xPairCard(card)
+
+    res.sendFile(path.join(outputDir, `${card.id}x${card.ur_pair.card.id}.jpg`))
+    // var idolized = _.sample([true, false])
+    // if (idolized) {
+    //   if (card.ur_pair.reverse_display_idolized) {
+    //     res.send(`<img data=${card.ur_pair.reverse_display_idolized} src=${card.ur_pair.card.clean_ur_idolized}\>` + `<img src=${card.clean_ur_idolized}\>`)
+    //   }
+    //   else {
+    //     res.send(`<img src=${card.clean_ur_idolized}\>` + `<img src=${card.ur_pair.card.clean_ur_idolized}\>`)
+    //   }
+    // }
+    // else {
+    //   if (card.ur_pair.reverse_display) {
+    //     res.send(`<img data=${card.ur_pair.reverse_display} src=${card.ur_pair.card.clean_ur}\>` + `<img src=${card.clean_ur}\>`)
+    //   }
+    //   else {
+    //     res.send(`<img src=${card.clean_ur}\>` + `<img src=${card.ur_pair.card.clean_ur}\>`)
+    //   }
+    // }
     console.log(`${card.id}: ${card.ur_pair.reverse_display_idolized}`)
   }
   catch

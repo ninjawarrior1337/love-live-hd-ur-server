@@ -29,13 +29,13 @@ let getCard = () => {
             if (error) reject(error);
 
             try {
-                json = JSON.parse(body)
+                var results = JSON.parse(body).results
             }
             catch (err) {
                 reject(err)
             }
 
-            resolve(JSON.parse(body).results[0]);
+            resolve(results[0]);
         });
     });
 };
