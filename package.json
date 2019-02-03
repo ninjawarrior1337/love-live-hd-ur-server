@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node ."
+    "start": "ts-node .",
+    "build": "tsc -p tsconfig.json"
   },
   "author": "",
   "license": "ISC",
