@@ -32,7 +32,7 @@ for (let file of fs.readdirSync(path.join(__dirname, "output"))) {
   fs.unlinkSync(path.join(__dirname, "output", file));
 }
 
-app.get("/", async (req, res) => {
+app.get("/", async (req: express.Request, res: express.Response) => {
   try {
     res.set("Content-Type", "image/jpeg");
     console.log("Selecting Card: Normal");
@@ -56,7 +56,7 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.get("/urpair", async (req, res) => {
+app.get("/urpair", async (req: express.Request, res: express.Response) => {
   // res.set("Content-Type", "image/jpeg");
   try {
     var card: Card = await getUrPair();
@@ -119,7 +119,7 @@ function changeLightColor(hex?: string, idol?: string): Promise<any> {
   }
 }
 
-app.get("/light", async (req, res) => {
+app.get("/light", async (req: express.Request, res: express.Response) => {
   var ip: any = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 
   console.log(ip);
