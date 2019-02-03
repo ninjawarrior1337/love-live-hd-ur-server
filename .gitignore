@@ -1,7 +1,7 @@
 waifu2x-caffe
 input/*
 output/*
-
+compiled
 # Logs
 logs
 *.log
