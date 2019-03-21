@@ -3,8 +3,10 @@
     "target": "esnext",
     "lib": ["es2015"],
     "outDir": "./build",
-    "module": "commonjs"
+    "module": "commonjs",
+    "types": ["jest"]
     // "sourceMap": true
   },
-  "include": ["./src/**/*"]
+  "include": ["./src/**/*"],
+  
 }
