@@ -14,32 +14,38 @@ var validSchool: Array<string> = [
 var inputDir: string = path.join(__dirname, "input");
 var outputDir: string = path.join(__dirname, "output");
 
-function getCard(): Promise<Card> {
+function generateOptions(specifiedIdol: string = ""): any 
+{
   const school: string = _.random(100) < 80 ? validSchool[0] : validSchool[1];
-  var options: any = {
+  return {
     method: "GET",
     url: "https://schoolido.lu/api/cards/",
     qs: {
       ordering: "random",
       rarity: "SSR,UR",
       name:
-        school === "Otonokizaka Academy" ? "Minami Kotori,Kousaka Honoka" : "",
-      idol_school: school
+        specifiedIdol ?
+          specifiedIdol :
+          school === "Otonokizaka Academy" ? "Minami Kotori,Kousaka Honoka" : "",
+      idol_school: specifiedIdol ? "" : school
     }
   };
+}
+
+function getCard(specifiedIdol:string = ""): Promise<Card> {
+  var options: any = generateOptions(specifiedIdol)
   return new Promise((resolve, reject) => {
-    request(options, (error, response, body) => {
+    request(options, async (error, response, body) => {
       // if (error) throw new Error(error);
       if (error) {
         reject(error);
       }
 
       try {
-        var results: any = JSON.parse(body).results;
+        var results: any = await JSON.parse(body).results;
       } catch (err) {
         reject(err);
       }
-
       resolve(results[0]);
     });
   });
@@ -115,4 +121,4 @@ function waifu2xCard(card: Card): Promise<null> {
   }
 }
 
-export { downloadCard, waifu2xCard, getCard };
+export { downloadCard, waifu2xCard, getCard, generateOptions };
