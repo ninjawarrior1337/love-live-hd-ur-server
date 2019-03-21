@@ -6,7 +6,7 @@
     "test": "jest",
     "start": "node build/index.js",
     "build": "tsc -p tsconfig.json",
-    "coveralls": "jest --coverage && cat ./tests/coverage/lcov.info | coveralls"
+    "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls"
   },
   "author": "ninjawarrior1337",
   "license": "ISC",
