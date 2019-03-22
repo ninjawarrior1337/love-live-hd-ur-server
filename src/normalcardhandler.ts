@@ -14,12 +14,10 @@ var validSchool: Array<string> = [
 var inputDir: string = path.join(__dirname, "input");
 var outputDir: string = path.join(__dirname, "output");
 
-function generateOptions(specifiedIdol: string = ""): any 
+function generateOptions(specifiedIdol: string = "", school?: string): any 
 {
-  const school: string = _.random(100) < 80 ? validSchool[0] : validSchool[1];
+  school = school ? school : (_.random(100) < 80 ? validSchool[0] : validSchool[1]);
   return {
-    method: "GET",
-    url: "https://schoolido.lu/api/cards/",
     qs: {
       ordering: "random",
       rarity: "SSR,UR",
@@ -35,7 +33,7 @@ function generateOptions(specifiedIdol: string = ""): any
 function getCard(specifiedIdol:string = ""): Promise<Card> {
   var options: any = generateOptions(specifiedIdol)
   return new Promise((resolve, reject) => {
-    request(options, async (error, response, body) => {
+    request.get("https://schoolido.lu/api/cards/", options, async (error, response, body) => {
       // if (error) throw new Error(error);
       if (error) {
         reject(error);
@@ -46,6 +44,7 @@ function getCard(specifiedIdol:string = ""): Promise<Card> {
       } catch (err) {
         reject(err);
       }
+      console.log(results)
       resolve(results[0]);
     });
   });
@@ -57,7 +56,7 @@ function downloadCard(card: Card): Promise<null> {
       resolve();
       return;
     }
-    request("http:" + card.clean_ur_idolized, error => {
+    request.get("http:" + card.clean_ur_idolized, error => {
       if (error) {
         reject(error);
       }

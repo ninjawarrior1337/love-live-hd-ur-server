@@ -36,7 +36,7 @@ app.get("/", async (req: express.Request, res: express.Response) => {
   try {
     res.set("Content-Type", "image/jpeg");
     console.log("Selecting Card: Normal");
-    var card: Card = await getCard()[0];
+    var card: Card = await getCard(req.query.idol)[0];
     console.log("Downloading Card: Normal");
     await downloadCard(card);
     console.log("Enhancing Card: Normal");
