@@ -6,7 +6,8 @@
     "test": "jest",
     "start": "node build/index.js",
     "build": "babel src -d build --extensions '.ts'",
-    "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls"
+    "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls",
+    "dev": "babel-watch -e '.ts' src/index.ts"
   },
   "author": "ninjawarrior1337",
   "license": "ISC",
@@ -36,6 +37,7 @@
     "babel-plugin-emojification": "^1.0.1",
     "babel-preset-jsfuck": "0.0.2",
     "babel-preset-minify": "^0.5.0",
+    "babel-watch": "^7.0.0",
     "coveralls": "^3.0.3",
     "jest": "^24.5.0",
     "ts-jest": "^24.0.0"

@@ -5,8 +5,9 @@
     "outDir": "./build",
     "module": "commonjs",
     "types": ["jest"],
-    "declaration": true
-    // "sourceMap": true
+    "declaration": true,
+    "allowSyntheticDefaultImports": true
+    // "sourceMap": true,
   },
   "include": ["./src/**/*"],
   

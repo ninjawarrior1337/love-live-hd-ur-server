@@ -1,5 +1,7 @@
 waifu2x-caffe
 input/*
+src/input/
+src/output/
 output/*
 build
 # Logs

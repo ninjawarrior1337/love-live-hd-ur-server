@@ -1,5 +1,5 @@
 module.exports =  {
-	"presets": [
+    "presets": [
             ["@babel/preset-env", {
                 targets: {
                     node: "current"
@@ -9,11 +9,11 @@ module.exports =  {
             "@babel/typescript",
 	],
 	"plugins": [
-			"@babel/proposal-class-properties",
+            "@babel/proposal-class-properties",
             "@babel/proposal-object-rest-spread",
             "@babel/plugin-proposal-export-default-from",
     ],
     "comments": false,
-    "minified": true,
-    "retainLines": true
+    // "minified": true,
+    // "retainLines": true
 }

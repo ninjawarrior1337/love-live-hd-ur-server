@@ -1,5 +1,5 @@
 import * as compression from "compression";
-import * as express from "express";
+import express from "express";
 import * as fs from "fs";
 import * as path from "path";
 import * as _ from "lodash";
@@ -36,7 +36,7 @@ app.get("/", async (req: express.Request, res: express.Response) => {
   try {
     res.set("Content-Type", "image/jpeg");
     console.log("Selecting Card: Normal");
-    var card: Card = await getCard(req.query.idol)[0];
+    var card: Card = await getCard(req.query.idol, req.query.id);
     console.log("Downloading Card: Normal");
     await downloadCard(card);
     console.log("Enhancing Card: Normal");
@@ -45,14 +45,14 @@ app.get("/", async (req: express.Request, res: express.Response) => {
     await res.sendFile(
       `${path.join(__dirname, "output", card.id.toString())}.jpg`
     );
+    console.log(card.id + ": Done Encoding");
+
+    if (req.query.changeLight === "true") {
+      changeLightColor(undefined, card.idol.name);
+    }
   } catch {
+    res.set("Content-Type", "text/plain")
     res.send("download failed, try again in a few seconds");
-  }
-
-  console.log(card.id + ": Done Encoding");
-
-  if (req.query.changeLight === "true") {
-    changeLightColor(undefined, card.idol.name);
   }
 });
 
