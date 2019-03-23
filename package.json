@@ -5,7 +5,7 @@
   "scripts": {
     "test": "jest",
     "start": "node build/index.js",
-    "build": "tsc -p tsconfig.json",
+    "build": "babel src -d build --extensions '.ts'",
     "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls"
   },
   "author": "ninjawarrior1337",
@@ -25,7 +25,17 @@
     "typescript": "^3.3.1"
   },
   "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.4.0",
+    "@babel/plugin-proposal-class-properties": "^7.4.0",
+    "@babel/plugin-proposal-export-default-from": "^7.2.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.4.0",
+    "@babel/preset-env": "^7.4.2",
+    "@babel/preset-typescript": "^7.3.3",
     "@types/node": "^11.11.3",
+    "babel-plugin-emojification": "^1.0.1",
+    "babel-preset-jsfuck": "0.0.2",
+    "babel-preset-minify": "^0.5.0",
     "coveralls": "^3.0.3",
     "jest": "^24.5.0",
     "ts-jest": "^24.0.0"

@@ -14,9 +14,9 @@ var validSchool: Array<string> = [
 var inputDir: string = path.join(__dirname, "input");
 var outputDir: string = path.join(__dirname, "output");
 
-function generateOptions(specifiedIdol: string = "", school?: string): any 
+export function generateOptions(specifiedIdol: string = ""): any 
 {
-  school = school ? school : (_.random(100) < 80 ? validSchool[0] : validSchool[1]);
+  const school:string = _.random(100) < 80 ? validSchool[0] : validSchool[1];
   return {
     qs: {
       ordering: "random",
@@ -30,7 +30,7 @@ function generateOptions(specifiedIdol: string = "", school?: string): any
   };
 }
 
-function getCard(specifiedIdol:string = ""): Promise<Card> {
+export function getCard(specifiedIdol:string = ""): Promise<Card> {
   var options: any = generateOptions(specifiedIdol)
   return new Promise((resolve, reject) => {
     request.get("https://schoolido.lu/api/cards/", options, async (error, response, body) => {
@@ -50,7 +50,7 @@ function getCard(specifiedIdol:string = ""): Promise<Card> {
   });
 }
 
-function downloadCard(card: Card): Promise<null> {
+export function downloadCard(card: Card): Promise<null> {
   return new Promise(async (resolve, reject) => {
     if (fs.existsSync(`input/${card.id}.png`)) {
       resolve();
@@ -70,7 +70,7 @@ function downloadCard(card: Card): Promise<null> {
   });
 }
 
-function waifu2xCard(card: Card): Promise<null> {
+export function waifu2xCard(card: Card): Promise<null> {
   if (process.platform === "win32") {
     return new Promise((resolve, reject) => {
       child_process
@@ -119,5 +119,3 @@ function waifu2xCard(card: Card): Promise<null> {
     });
   }
 }
-
-export { downloadCard, waifu2xCard, getCard, generateOptions };
