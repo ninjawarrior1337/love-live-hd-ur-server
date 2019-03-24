@@ -12,6 +12,7 @@ module.exports =  {
             "@babel/proposal-class-properties",
             "@babel/proposal-object-rest-spread",
             "@babel/plugin-proposal-export-default-from",
+            "@babel/plugin-proposal-optional-catch-binding"
     ],
     "comments": false,
     // "minified": true,
