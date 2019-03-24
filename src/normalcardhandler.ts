@@ -47,12 +47,17 @@ export function getCardCallback(error, response, body): Promise<Card>
     // if (error) throw new Error(error);
     if (error) {
       reject(error);
+      return;
     }
-
-    try {
+    try 
+    {
       var results: any = await JSON.parse(body).results;
-    } catch (err) {
+    } 
+    catch (err) 
+    {
+      console.log(body)
       reject(err);
+      return;
     }
     // console.log(results)
     resolve(results[0]);
@@ -62,10 +67,17 @@ export function getCardCallback(error, response, body): Promise<Card>
 export function getCard(specifiedIdol?:string, specifiedIds?:string): Promise<Card> {
   var options: any = generateOptions(specifiedIdol, specifiedIds)
   return new Promise((resolve, reject) => {
-    request.get("https://schoolido.lu/api/cards/", options, async (err, response, body) => {
-      let card: Card = await getCardCallback(err, response, body)
-      if (err) reject(err)
-      else resolve(card)
+    request.get("https://schoolido.lu/api/cards/", options, async (error, response, body) => {
+      if(error) {reject(error); return}
+      try 
+      {
+        let card: Card = await getCardCallback(error, response, body);
+        resolve(card);
+      }
+      catch(e)
+      {
+        reject(e)
+      }
     });
   });
 }
@@ -91,14 +103,12 @@ export function downloadCard(card: Card): Promise<null> {
 }
 
 export function waifu2xCard(card: Card): Promise<null> {
-  console.log(fs.existsSync(`${path.join(__dirname, "output", card.id.toString())}.jpg`))
+  console.log(fs.existsSync(`${path.join(__dirname, "output", card.id.toString())}.jpg`));
 
-  if(fs.existsSync(`${path.join(__dirname, "output", card.id.toString())}.jpg`))
-  {
-    return new Promise((resolve, reject) => resolve())
+  if(fs.existsSync(`${path.join(__dirname, "output", card.id.toString())}.jpg`)) {
+    return new Promise((resolve, reject) => resolve());
   }
-  else
-  {
+  else {
     if (process.platform === "win32") {
       return new Promise((resolve, reject) => {
         child_process
