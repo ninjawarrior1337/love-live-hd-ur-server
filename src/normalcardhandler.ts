@@ -82,30 +82,51 @@ export function getCard(specifiedIdol?:string, specifiedIds?:string): Promise<Ca
   });
 }
 
-export function downloadCard(card: Card): Promise<null> {
-  return new Promise(async (resolve, reject) => {
-    if (fs.existsSync(path.join(inputDir, `${card.id}.png)`))) {
-      resolve();
-      return;
-    }
-    request.get("http:" + card.clean_ur_idolized, error => {
-      if (error) {
-        reject(error);
+export function downloadCard(card: Card, regular?: boolean): Promise<string> {
+  let isRegular = regular && card.clean_ur ? "R" : ""
+
+  if(isRegular)
+    return new Promise(async (resolve, reject) => {
+      if (fs.existsSync(path.join(inputDir, `${card.id}R.png)`))) {
+        resolve(isRegular);
+        return;
       }
-    }).pipe(
-      fs
-        .createWriteStream(path.join(inputDir, `${card.id}.png`), {
-          autoClose: true
-        })
-        .on("close", () => resolve())
-    );
-  });
+      request.get("http:" + card.clean_ur, error => {
+        if (error) {
+          reject(error);
+        }
+      }).pipe(
+        fs
+          .createWriteStream(path.join(inputDir, `${card.id}R.png`), {
+            autoClose: true
+          })
+          .on("close", () => resolve(isRegular))
+      );
+    });
+  else
+    return new Promise(async (resolve, reject) => {
+      if (fs.existsSync(path.join(inputDir, `${card.id}.png)`))) {
+        resolve(isRegular);
+        return;
+      }
+      request.get("http:" + card.clean_ur_idolized, error => {
+        if (error) {
+          reject(error);
+        }
+      }).pipe(
+        fs
+          .createWriteStream(path.join(inputDir, `${card.id}.png`), {
+            autoClose: true
+          })
+          .on("close", () => resolve(isRegular))
+      );
+    });
 }
 
-export function waifu2xCard(card: Card): Promise<null> {
-  console.log(fs.existsSync(`${path.join(__dirname, "output", card.id.toString())}.jpg`));
+export function waifu2xCard(card: Card, regular?: string): Promise<null> {
+  console.log(fs.existsSync(`${path.join(__dirname, "output", card.id.toString())}${regular}.jpg`));
 
-  if(fs.existsSync(`${path.join(__dirname, "output", card.id.toString())}.jpg`)) {
+  if(fs.existsSync(`${path.join(__dirname, "output", card.id.toString())}${regular}.jpg`)) {
     return new Promise((resolve, reject) => resolve());
   }
   else {
@@ -119,10 +140,16 @@ export function waifu2xCard(card: Card): Promise<null> {
               "3.0",
               "-n",
               "3",
+              "-p",
+              "gpu",
+              "-y",
+              "cunet",
+              "t",
+              "1",
               "-i",
-              `${path.join(inputDir, card.id.toString())}.png`,
+              `${path.join(inputDir, card.id.toString())}${regular}.png`,
               "-o",
-              `${path.join(outputDir, card.id.toString())}.jpg`
+              `${path.join(outputDir, card.id.toString())}${regular}.jpg`
             ],
             {
               windowsHide: true
@@ -144,9 +171,9 @@ export function waifu2xCard(card: Card): Promise<null> {
             "--noise_level",
             "3",
             "-i",
-            `${path.join(__dirname, "input", card.id.toString())}.png`,
+            `${path.join(__dirname, "input", card.id.toString())}${regular}.png`,
             "-o",
-            `${path.join(__dirname, "output", card.id.toString())}.jpg`
+            `${path.join(__dirname, "output", card.id.toString())}${regular}.jpg`
           ])
           .on("close", () => {
             resolve();

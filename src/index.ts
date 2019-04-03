@@ -38,12 +38,12 @@ app.get("/", async (req: express.Request, res: express.Response) => {
     console.log("Selecting Card: Normal");
     var card: Card = await getCard(req.query.idol, req.query.id);
     console.log("Downloading Card: Normal");
-    await downloadCard(card);
+    let regular = await downloadCard(card, req.query.regular);
     console.log("Enhancing Card: Normal");
-    await waifu2xCard(card);
+    await waifu2xCard(card, regular);
 
     await res.sendFile(
-      `${path.join(__dirname, "output", card.id.toString())}.jpg`
+      `${path.join(__dirname, "output", card.id.toString())}${regular}.jpg`
     );
     console.log(card.id + ": Done Encoding");
 
