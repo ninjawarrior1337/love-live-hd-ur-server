@@ -19,17 +19,20 @@ export default function waifu2xIfy(card?, customImage?)
 
     if(card)
     {
-      fileName = card.id.toString()
+      fileName = card.card.id.toString()
       fileExt = "png"
+
+      infilePath = path.join(inputDir, fileName + card.regular + "." + fileExt)
+      outfilePath = path.join(outputDir, fileName + ".jpg")
     }
     else
     {
       fileName = customImage.filename
       fileExt = customImage.fileExt
+
+      infilePath = path.join(inputDir, fileName + "." + fileExt)
+      outfilePath = path.join(outputDir, fileName + ".jpg")
     }
-    
-    infilePath = path.join(inputDir, fileName + "." + fileExt)
-    outfilePath = path.join(outputDir, fileName + ".jpg")
 
     console.log(fs.existsSync(outfilePath));
 
