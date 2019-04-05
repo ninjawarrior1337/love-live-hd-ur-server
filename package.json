@@ -5,9 +5,9 @@
   "scripts": {
     "test": "jest",
     "start": "node build/index.js",
-    "build": "babel src -d build --extensions '.ts'",
+    "build": "babel src -d build --extensions .ts",
     "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls",
-    "dev": "babel-watch -e '.ts' src/index.ts"
+    "dev": "babel-watch -e .ts src/index.ts"
   },
   "author": "ninjawarrior1337",
   "license": "ISC",

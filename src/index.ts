@@ -44,12 +44,12 @@ app.get("/", urlencodedParser, async (req: express.Request, res: express.Respons
     console.log("Selecting Card: Normal");
     let card: Card = await getCard(req.query.idol, req.query.id);
     console.log("Downloading Card: Normal");
-    let cardFileName = await downloadCard(card);
+    let regular = await downloadCard(card, req.query.regular);
     console.log("Enhancing Card: Normal");
-    await waifu2x({card});
+    await waifu2x({card, regular});
 
     await res.sendFile(
-      `${path.join(__dirname, "output", card.id.toString())}.jpg`
+      `${path.join(__dirname, "output", card.id.toString())}${regular}.jpg`
     );
     console.log(card.id + ": Done Encoding");
 
