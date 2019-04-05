@@ -1,9 +1,12 @@
-import * as compression from "compression";
 import express from "express";
+import bodyParser from "body-parser";
 import * as fs from "fs";
 import * as path from "path";
 import * as _ from "lodash";
-import { getCard, downloadCard, waifu2xCard } from "./normalcardhandler";
+import { getCard, downloadCard } from "./normalcardhandler";
+import waifu2x from './waifu2xHandler'
+import requestedImage from './requestedImage'
+
 import {
   getUrPair,
   downloadAndMergePair,
@@ -11,6 +14,9 @@ import {
 } from "./urcardhandler";
 
 var app: express.Application = express();
+
+var urlencodedParser = bodyParser.urlencoded()
+var rawParser = bodyParser.raw()
 
 import * as lifx from "node-lifx";
 import { Card } from "./lovelive";
@@ -32,15 +38,15 @@ for (let file of fs.readdirSync(path.join(__dirname, "output"))) {
   fs.unlinkSync(path.join(__dirname, "output", file));
 }
 
-app.get("/", async (req: express.Request, res: express.Response) => {
+app.get("/", urlencodedParser, async (req: express.Request, res: express.Response) => {
   try {
     res.set("Content-Type", "image/jpeg");
     console.log("Selecting Card: Normal");
-    var card: Card = await getCard(req.query.idol, req.query.id);
+    let card: Card = await getCard(req.query.idol, req.query.id);
     console.log("Downloading Card: Normal");
-    await downloadCard(card);
+    let cardFileName = await downloadCard(card);
     console.log("Enhancing Card: Normal");
-    await waifu2xCard(card);
+    await waifu2x({card});
 
     await res.sendFile(
       `${path.join(__dirname, "output", card.id.toString())}.jpg`
@@ -55,6 +61,14 @@ app.get("/", async (req: express.Request, res: express.Response) => {
     res.send("download failed, try again in a few seconds");
   }
 });
+
+app.get("/submit", rawParser, async(req: express.Request, res: express.Response) => 
+{
+  let image = new requestedImage(req.body)
+  await image.writeData()
+  await image.waifu2xify()
+  await res.sendFile(image.outputFilePath)
+})
 
 app.get("/urpair", async (req: express.Request, res: express.Response) => {
   // res.set("Content-Type", "image/jpeg");

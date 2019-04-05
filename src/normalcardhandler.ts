@@ -82,10 +82,10 @@ export function getCard(specifiedIdol?:string, specifiedIds?:string): Promise<Ca
   });
 }
 
-export function downloadCard(card: Card): Promise<null> {
+export function downloadCard(card: Card): Promise<string> {
   return new Promise(async (resolve, reject) => {
     if (fs.existsSync(path.join(inputDir, `${card.id}.png)`))) {
-      resolve();
+      resolve(`${card.id}.png)`);
       return;
     }
     request.get("http:" + card.clean_ur_idolized, error => {
@@ -97,64 +97,7 @@ export function downloadCard(card: Card): Promise<null> {
         .createWriteStream(path.join(inputDir, `${card.id}.png`), {
           autoClose: true
         })
-        .on("close", () => resolve())
+        .on("close", () => resolve(`${card.id}.png`))
     );
   });
-}
-
-export function waifu2xCard(card: Card): Promise<null> {
-  console.log(fs.existsSync(`${path.join(__dirname, "output", card.id.toString())}.jpg`));
-
-  if(fs.existsSync(`${path.join(__dirname, "output", card.id.toString())}.jpg`)) {
-    return new Promise((resolve, reject) => resolve());
-  }
-  else {
-    if (process.platform === "win32") {
-      return new Promise((resolve, reject) => {
-        child_process
-          .execFile(
-            path.join(__dirname, "waifu2x-caffe", "waifu2x-caffe-cui.exe"),
-            [
-              "-s",
-              "3.0",
-              "-n",
-              "3",
-              "-i",
-              `${path.join(inputDir, card.id.toString())}.png`,
-              "-o",
-              `${path.join(outputDir, card.id.toString())}.jpg`
-            ],
-            {
-              windowsHide: true
-            }
-          )
-          .on("close", () => {
-            resolve();
-          })
-          .on("message", msg => {
-            console.log(msg);
-          });
-      });
-    } else {
-      return new Promise((resolve, reject) => {
-        child_process
-          .spawn("waifu2x-converter-cpp", [
-            "--scale_ratio",
-            "3.0",
-            "--noise_level",
-            "3",
-            "-i",
-            `${path.join(__dirname, "input", card.id.toString())}.png`,
-            "-o",
-            `${path.join(__dirname, "output", card.id.toString())}.jpg`
-          ])
-          .on("close", () => {
-            resolve();
-          })
-          .on("message", msg => {
-            console.log(msg);
-          });
-      });
-    }
-  }
 }
