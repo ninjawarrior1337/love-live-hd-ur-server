@@ -2,6 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import * as fs from "fs";
 import * as path from "path";
+import * as util from 'util';
 import * as _ from "lodash";
 import { getCard, downloadCard } from "./normalcardhandler";
 import waifu2x from './waifu2xHandler'
@@ -13,34 +14,44 @@ import {
   waifu2xPairCard
 } from "./urcardhandler";
 
-var app: express.Application = express();
+let app: express.Application = express();
 
-var urlencodedParser = bodyParser.urlencoded()
-var rawParser = bodyParser.raw()
+let urlencodedParser = bodyParser.urlencoded({extended: true})
+let rawParser = bodyParser.raw({type: '*/*', limit: "3mb"})
 
 import * as lifx from "node-lifx";
 import { Card } from "./lovelive";
-var lclient: any = new lifx.Client();
+let lclient: any = new lifx.Client();
 lclient.init({ lights: ["192.168.1.86"] });
 
 // var PngQuant = require("pngquant");
 // var pngquanter = new PngQuant([192, "--quality", "60-90", "-"]);
 
-var inputDir: string = path.join(__dirname, "input");
-var outputDir: string = path.join(__dirname, "output");
+let inputDir: string = path.join(__dirname, "input");
+let outputDir: string = path.join(__dirname, "output");
 
 if (!fs.existsSync(inputDir) || !fs.existsSync(outputDir)) {
   fs.mkdirSync(inputDir);
   fs.mkdirSync(outputDir);
 }
 
-for (let file of fs.readdirSync(path.join(__dirname, "output"))) {
-  fs.unlinkSync(path.join(__dirname, "output", file));
+for (let file of fs.readdirSync(outputDir)) 
+{
+  fs.unlinkSync(path.join(outputDir, file));
+}
+
+if(process.env.NODE_ENV === 'dev')
+{
+  for(let file of fs.readdirSync(inputDir))
+  {
+    fs.unlinkSync(path.join(inputDir, file))
+  }
 }
 
 app.get("/", urlencodedParser, async (req: express.Request, res: express.Response) => {
   try {
     res.set("Content-Type", "image/jpeg");
+    console.log(req.query.regular)
     console.log("Selecting Card: Normal");
     let card: Card = await getCard(req.query.idol, req.query.id);
     console.log("Downloading Card: Normal");
@@ -68,6 +79,7 @@ app.get("/submit", rawParser, async(req: express.Request, res: express.Response)
   await image.writeData()
   await image.waifu2xify()
   await res.sendFile(image.outputFilePath)
+  await util.promisify(fs.unlink)(image.inputFilePath)
 })
 
 app.get("/urpair", async (req: express.Request, res: express.Response) => {

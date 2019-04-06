@@ -2,7 +2,7 @@ import * as crypto from 'crypto'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as util from 'util'
-import * as fileType from 'file-type'
+import fileType from 'file-type'
 import waifu2xHandler from './waifu2xHandler'
 
 const writeFileFs = util.promisify(fs.writeFile)
@@ -13,6 +13,7 @@ export default class requestedImage {
     outputFolder: string
     outputFilePath: string
     fileName: string
+    inputFilePath: string
 
     constructor(imageData: Buffer) {
         this.imageData = imageData
@@ -21,24 +22,9 @@ export default class requestedImage {
         this.fileName = ""
     }
 
-    get inFolder()
-    {
-        return this.inputFolder
-    }
-
-    get outFolder()
-    {
-        return this.outputFolder
-    }
-
-    get filename()
-    {
-        return this.fileName
-    }
-
     get fileExt()
     {
-        return this.fileExt
+        return fileType(this.imageData).ext
     }
 
     async writeData()
@@ -55,8 +41,9 @@ export default class requestedImage {
         )
         this.outputFilePath = path.join(
             this.outputFolder, 
-            `${this.fileName}.${fileType(this.imageData).ext}`
+            `${this.fileName}.jpg`
         )
+        this.inputFilePath = path.join(this.inputFolder, this.fileName + "." + this.fileExt)
         return;
     }
 
