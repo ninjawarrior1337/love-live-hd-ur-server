@@ -7,7 +7,8 @@
     "start": "node build/index.js",
     "build": "babel src -d build --extensions .ts",
     "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls",
-    "dev": "cross-env NODE_ENV=dev babel-watch -e .ts src/index.ts"
+    "dev": "cross-env NODE_ENV=dev babel-watch -e .ts src/index.ts",
+    "pkg": "webpack && pkg dist/bundle.js --targets node10-win-x64 --out-path dist"
   },
   "author": "ninjawarrior1337",
   "license": "ISC",
@@ -38,15 +39,21 @@
     "@babel/preset-env": "^7.4.2",
     "@babel/preset-typescript": "^7.3.3",
     "@types/node": "^11.11.3",
+    "babel-loader": "^8.0.5",
     "babel-plugin-emojification": "^1.0.1",
     "babel-preset-jsfuck": "0.0.2",
     "babel-preset-minify": "^0.5.0",
     "babel-watch": "^7.0.0",
     "coveralls": "^3.0.3",
     "jest": "^24.5.0",
+    "node-loader": "^0.6.0",
     "ts-jest": "^24.0.0",
+    "ts-loader": "^5.3.3",
     "tslib": "^1.9.3",
-    "typescript": "^3.3.4000"
+    "typescript": "^3.3.4000",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpack-node-externals": "^1.7.2"
   },
   "pkg": {
     "assets": "build/waifu2x-caffe/**/*"

@@ -60,7 +60,7 @@ app.get("/", urlencodedParser, async (req: express.Request, res: express.Respons
     await waifu2x({card, regular});
 
     await res.sendFile(
-      `${path.join(__dirname, "output", card.id.toString())}${regular}.jpg`
+      `${path.join(outputDir, card.id.toString())}${regular}.jpg`
     );
     console.log(card.id + ": Done Encoding");
 

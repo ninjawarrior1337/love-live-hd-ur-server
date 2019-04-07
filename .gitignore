@@ -4,6 +4,7 @@ src/input/
 src/output/
 output/*
 build
+dist
 # Logs
 logs
 *.log
