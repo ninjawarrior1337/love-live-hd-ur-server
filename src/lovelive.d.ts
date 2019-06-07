@@ -40,11 +40,11 @@ export interface Card {
   is_special: boolean;
   hp: number;
   skill: string;
-  card_image: string;
+  card_image?: string;
   card_idolized_image: string;
   transparent_image: string;
   transparent_idolized_image: string;
-  clean_ur: string;
-  clean_ur_idolized: string;
+  clean_ur?: string;
+  clean_ur_idolized?: string;
   ur_pair: URPair;
 }

@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as util from 'util'
 import fileType from 'file-type'
-import waifu2xHandler from './waifu2xHandler'
+import waifu2xHandler from '../waifu2xHandler'
 
 const writeFileFs = util.promisify(fs.writeFile)
 
@@ -14,12 +14,14 @@ export default class requestedImage {
     outputFilePath: string
     fileName: string
     inputFilePath: string
+    protected cacheImage: boolean
 
     constructor(imageData: Buffer) {
         this.imageData = imageData
         this.inputFolder = path.join(__dirname, "input")
         this.outputFolder = path.join(__dirname, "output")
         this.fileName = ""
+        this.cacheImage = false
     }
 
     get fileExt()
@@ -27,29 +29,36 @@ export default class requestedImage {
         return fileType(this.imageData).ext
     }
 
-    async writeData()
+    async setFileNames()
     {
         let fileHash = crypto.createHash("sha256")
         fileHash.update(this.imageData)
         this.fileName = fileHash.digest("hex")
-        await writeFileFs(
-            path.join(
-                this.inputFolder, 
-                `${this.fileName}.${fileType(this.imageData).ext}`
-            ), 
-            this.imageData
-        )
         this.outputFilePath = path.join(
-            this.outputFolder, 
+            this.outputFolder,
             `${this.fileName}.jpg`
         )
-        this.inputFilePath = path.join(this.inputFolder, this.fileName + "." + this.fileExt)
+        this.inputFilePath = path.join(
+            this.inputFolder,
+            `${this.fileName}.${this.fileExt}`
+        )
+    }
+
+    async writeData()
+    {
+        this.setFileNames()
+        if(!fs.existsSync(this.inputFilePath))
+            await writeFileFs(this.inputFilePath, this.imageData)
         return;
     }
 
     async waifu2xify()
     {
         await waifu2xHandler(undefined, this)
+        if(!this.cacheImage)
+        {
+            await util.promisify(fs.unlink)(this.inputFilePath)
+        }
         return;
     }
 }

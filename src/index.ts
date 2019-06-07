@@ -4,9 +4,9 @@ import * as fs from "fs";
 import * as path from "path";
 import * as util from 'util';
 import * as _ from "lodash";
-import { getCard, downloadCard } from "./normalcardhandler";
+import { getCard, downloadCard } from "./normalcardutils";
 import waifu2x from './waifu2xHandler'
-import requestedImage from './requestedImage'
+import requestedImage from './sources/requestedImage'
 
 import {
   getUrPair,
@@ -21,6 +21,8 @@ let rawParser = bodyParser.raw({type: '*/*', limit: "3mb"})
 
 import * as lifx from "node-lifx";
 import { Card } from "./lovelive";
+import normalCard from "./sources/normalCard";
+import urpair from "./sources/urpair";
 let lclient: any = new lifx.Client();
 lclient.init({ lights: ["192.168.1.86"] });
 
@@ -48,25 +50,32 @@ if(process.env.NODE_ENV === 'dev')
   }
 }
 
+//Handles random card and specific card generation
+
 app.get("/", urlencodedParser, async (req: express.Request, res: express.Response) => {
   try {
-    res.set("Content-Type", "image/jpeg");
-    console.log(req.query.regular)
-    console.log("Selecting Card: Normal");
-    let card: Card = await getCard(req.query.idol, req.query.id);
-    console.log("Downloading Card: Normal");
-    let regular = await downloadCard(card, req.query.regular);
-    console.log("Enhancing Card: Normal");
-    await waifu2x({card, regular});
+    // res.set("Content-Type", "image/jpeg");
+    // console.log(req.query.regular)
+    // console.log("Selecting Card: Normal");
+    // let card: Card = await getCard(req.query.idol, req.query.id);
+    // console.log("Downloading Card: Normal");
+    // let regular = await downloadCard(card, req.query.regular);
+    // console.log("Enhancing Card: Normal");
+    // await waifu2x({card, regular});
 
-    await res.sendFile(
-      `${path.join(outputDir, card.id.toString())}${regular}.jpg`
-    );
-    console.log(card.id + ": Done Encoding");
+    // await res.sendFile(
+    //   `${path.join(outputDir, card.id.toString())}${regular}.jpg`
+    // );
+    // console.log(card.id + ": Done Encoding");
 
-    if (req.query.changeLight === "true") {
-      changeLightColor(undefined, card.idol.name);
-    }
+    // if (req.query.changeLight === "true") {
+    //   changeLightColor(undefined, card.idol.name);
+    // }
+    let image = new normalCard(req.query.length === 0, req.query.idol, req.query.id, req.query.regular)
+    await image.setCard()
+    await image.assembleAndWrite()
+    await image.waifu2xify()
+    await res.sendFile(image.outputFilePath)
   } 
   catch(e) {
     res.set("Content-Type", "text/plain").status(500)
@@ -77,11 +86,10 @@ app.get("/", urlencodedParser, async (req: express.Request, res: express.Respons
 app.get("/submit", rawParser, async(req: express.Request, res: express.Response) => 
 {
   try {
-  let image = new requestedImage(req.body)
-  await image.writeData()
-  await image.waifu2xify()
-  await res.sendFile(image.outputFilePath)
-  await util.promisify(fs.unlink)(image.inputFilePath)
+    let image = new requestedImage(req.body)
+    await image.writeData()
+    await image.waifu2xify()
+    await res.sendFile(image.outputFilePath)
   }
   catch(e) {
     res.set("Content-Type", "text/plain").status(500)
@@ -91,17 +99,28 @@ app.get("/submit", rawParser, async(req: express.Request, res: express.Response)
 
 app.get("/urpair", async (req: express.Request, res: express.Response) => {
   // res.set("Content-Type", "image/jpeg");
-  try {
-    var card: Card = await getUrPair();
-    await downloadAndMergePair(card);
-    await waifu2xPairCard(card);
+  try 
+  {
+    let pair = new urpair(req.query.random, req.query.idol, req.query.id, req.query.regular)
 
-    res.sendFile(
-      path.join(outputDir, `${card.id}x${card.ur_pair.card.id}.jpg`)
-    );
-    console.log(`${card.id}: ${card.ur_pair.reverse_display_idolized}`);
-  } catch {
-    res.send("failed, try again in a few seconds");
+    await pair.setCard()
+    pair.checkUrPair()
+    await pair.assembleAndWrite()
+    await pair.waifu2xify()
+    await res.sendFile(pair.outputFilePath)
+    // var card: Card = await getUrPair();
+    // await downloadAndMergePair(card);
+    // await waifu2xPairCard(card);
+
+    // res.sendFile(
+    //   path.join(outputDir, `${card.id}x${card.ur_pair.card.id}.jpg`)
+    // );
+    // console.log(`${card.id}: ${card.ur_pair.reverse_display_idolized}`);
+  } 
+  catch(e)
+  {
+    res.set("Content-Type", "text/plain").status(500)
+    res.send(e);
   }
 });
 

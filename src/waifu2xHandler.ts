@@ -1,11 +1,12 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as child_process from 'child_process'
+import requestedImage from './sources/requestedImage';
 
 let inputDir: string = path.join(__dirname, "input")
 let outputDir: string = path.join(__dirname, "output")
 
-export default function waifu2xIfy(card?, customImage?)
+export default function waifu2xIfy(card?, customImage?: requestedImage)
 {
     let fileName:string;
     let fileExt:string;
@@ -30,8 +31,8 @@ export default function waifu2xIfy(card?, customImage?)
       fileName = customImage.fileName
       fileExt = customImage.fileExt
 
-      infilePath = path.join(inputDir, fileName + "." + fileExt)
-      outfilePath = path.join(outputDir, fileName + ".jpg")
+      infilePath = customImage.inputFilePath
+      outfilePath = customImage.outputFilePath
     }
 
     console.log(fs.existsSync(outfilePath));
