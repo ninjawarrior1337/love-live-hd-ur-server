@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import child_process from 'child_process'
+import * as child_process from 'child_process'
 
 let inputDir: string = path.join(__dirname, "input")
 let outputDir: string = path.join(__dirname, "output")
@@ -66,9 +66,13 @@ export default function waifu2xIfy(card?, customImage?)
             })
             .on("message", msg => {
               console.log(msg);
+            })
+            .on("error", (e) => {
+              reject(e)
             });
         });
       } else {
+        console.log("processing for linux/macos")
         return new Promise((resolve, reject) => {
           child_process
             .spawn("waifu2x-converter-cpp", [

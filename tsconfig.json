@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": ["es2015"],
+    "lib": ["es2015", "dom"],
     "outDir": "./build",
     "module": "commonjs",
-    "types": ["jest"],
-    "declaration": true,
+    "types": ["jest", "node"],
+    // "declaration": true,
     "allowSyntheticDefaultImports": true
     // "sourceMap": true,
   },

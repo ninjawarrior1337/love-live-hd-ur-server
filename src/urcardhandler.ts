@@ -44,7 +44,7 @@ function getUrPair(): Promise<Card> {
         reject(err);
       }
 
-      _.forEach(results, (val, index, col) => {
+      _.forEach(results, (val:any, index, col) => {
         if (val.ur_pair != null) {
           resolve(val);
         }

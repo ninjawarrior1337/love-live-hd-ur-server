@@ -8,7 +8,7 @@ import waifu2xHandler from './waifu2xHandler'
 const writeFileFs = util.promisify(fs.writeFile)
 
 export default class requestedImage {
-    imageData: Buffer
+    public imageData: Buffer
     inputFolder: string
     outputFolder: string
     outputFilePath: string

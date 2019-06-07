@@ -1,5 +1,5 @@
-import express from "express";
-import bodyParser from "body-parser";
+import * as express from "express";
+import * as bodyParser from "body-parser";
 import * as fs from "fs";
 import * as path from "path";
 import * as util from 'util';
@@ -67,19 +67,26 @@ app.get("/", urlencodedParser, async (req: express.Request, res: express.Respons
     if (req.query.changeLight === "true") {
       changeLightColor(undefined, card.idol.name);
     }
-  } catch {
-    res.set("Content-Type", "text/plain")
-    res.send("download failed, try again in a few seconds");
+  } 
+  catch(e) {
+    res.set("Content-Type", "text/plain").status(500)
+    res.send(e);
   }
 });
 
 app.get("/submit", rawParser, async(req: express.Request, res: express.Response) => 
 {
+  try {
   let image = new requestedImage(req.body)
   await image.writeData()
   await image.waifu2xify()
   await res.sendFile(image.outputFilePath)
   await util.promisify(fs.unlink)(image.inputFilePath)
+  }
+  catch(e) {
+    res.set("Content-Type", "text/plain").status(500)
+    res.send(e);
+  }
 })
 
 app.get("/urpair", async (req: express.Request, res: express.Response) => {
@@ -122,7 +129,7 @@ function changeLightColor(hex?: string, idol?: string): Promise<any> {
     //     res.send(data.toString());
     //   }
     // });
-    let selectedColor: string = _.sample(colors);
+    let selectedColor: string = `${_.sample(colors)}`;
     if (hex !== undefined) {
       return new Promise((resolve, reject) => {
         light.colorRgbHex("#" + hex, 0, () => {

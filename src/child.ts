@@ -18,28 +18,30 @@ import * as path from "path";
 //     console.log(msg);
 //   });
 
-const waifu2x: child_process.ChildProcess = child_process
-  .spawn("waifu2x-converter-cpp", [
-    "--scale_ratio",
-    "3.0",
-    "--noise_level",
-    "3",
-    "-i",
-    `${path.join(__dirname, "input", "65")}.png`,
-    "-o",
-    `${path.join(__dirname, "output", "1208")}.jpg`
-  ])
-  .on("close", () => {
-    console.log("closed");
-  })
-  .on("message", msg => {
-    console.log(msg);
-  });
-
-waifu2x.stdout.on("data", data => {
-  console.log(`stdout: ${data}`);
-});
-
-waifu2x.on("close", code => {
-  console.log(`child process exited with code ${code}`);
-});
+child_process
+            .execFile(
+              path.join(__dirname, "waifu2x-caffe", "waifu2x-caffe-cui.exe"),
+              [
+                "-s",
+                "3.0",
+                "-n",
+                "3",
+                "-i",
+                'D:\\NodeJS Stuff\\random-ur-clear-card\\src\\input\\1384.png',
+                "-o",
+                'D:\\NodeJS Stuff\\random-ur-clear-card\\src\\output\\1384.png'
+              ],
+              {
+                windowsHide: true
+              }
+            )
+            .on("close", () => {
+              
+            })
+            .on("message", msg => {
+              console.log(msg);
+            })
+            .on("error", (e) => {
+              
+            })
+            .stdout.pipe(process.stdout)
