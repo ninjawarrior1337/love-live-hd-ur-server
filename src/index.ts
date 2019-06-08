@@ -54,24 +54,7 @@ if(process.env.NODE_ENV === 'dev')
 
 app.get("/", urlencodedParser, async (req: express.Request, res: express.Response) => {
   try {
-    // res.set("Content-Type", "image/jpeg");
-    // console.log(req.query.regular)
-    // console.log("Selecting Card: Normal");
-    // let card: Card = await getCard(req.query.idol, req.query.id);
-    // console.log("Downloading Card: Normal");
-    // let regular = await downloadCard(card, req.query.regular);
-    // console.log("Enhancing Card: Normal");
-    // await waifu2x({card, regular});
-
-    // await res.sendFile(
-    //   `${path.join(outputDir, card.id.toString())}${regular}.jpg`
-    // );
-    // console.log(card.id + ": Done Encoding");
-
-    // if (req.query.changeLight === "true") {
-    //   changeLightColor(undefined, card.idol.name);
-    // }
-    let image = new normalCard(req.query.length === 0, req.query.idol, req.query.id, req.query.regular)
+    let image = new normalCard(Object.keys(req.query).length === 0, req.query.idol, req.query.id, req.query.regular)
     await image.setCard()
     await image.assembleAndWrite()
     await image.waifu2xify()
@@ -79,7 +62,7 @@ app.get("/", urlencodedParser, async (req: express.Request, res: express.Respons
   } 
   catch(e) {
     res.set("Content-Type", "text/plain").status(500)
-    res.send(e);
+    res.send(`${e}`);
   }
 });
 
@@ -93,7 +76,7 @@ app.get("/submit", rawParser, async(req: express.Request, res: express.Response)
   }
   catch(e) {
     res.set("Content-Type", "text/plain").status(500)
-    res.send(e);
+    res.send(`${e}`);
   }
 })
 
@@ -101,7 +84,7 @@ app.get("/urpair", async (req: express.Request, res: express.Response) => {
   // res.set("Content-Type", "image/jpeg");
   try 
   {
-    let pair = new urpair(req.query.random, req.query.idol, req.query.id, req.query.regular)
+    let pair = new urpair(Object.keys(req.query).length === 0, req.query.idol, req.query.id, req.query.regular)
 
     await pair.setCard()
     pair.checkUrPair()
@@ -120,7 +103,7 @@ app.get("/urpair", async (req: express.Request, res: express.Response) => {
   catch(e)
   {
     res.set("Content-Type", "text/plain").status(500)
-    res.send(e);
+    res.send(`${e}`);
   }
 });
 

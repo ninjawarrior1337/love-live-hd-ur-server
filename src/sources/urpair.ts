@@ -1,8 +1,12 @@
 import normalCard from "./normalCard";
-import jimp from "jimp";
+import * as jimp from "jimp";
 import * as path from 'path'
+import * as _ from 'lodash'
+import * as request from 'request'
+import { Card } from "../lovelive";
 
 export default class urpair extends normalCard {
+    
     private jimpCardLeft: jimp
     private jimpCardRight: jimp
     private combinedCard: jimp
@@ -16,7 +20,7 @@ export default class urpair extends normalCard {
     {
         if(!this.card.ur_pair)
         {
-            throw new Error("Card does not have a UR Pair")
+            throw new Error(`Card does not have a UR Pair: ${JSON.stringify(this.card)}`)
         }
     }
 
@@ -29,11 +33,71 @@ export default class urpair extends normalCard {
         )
         this.inputFilePath = path.join(
             this.inputFolder,
-            `${this.fileName}.${this.fileExt}`
+            `${this.fileName}.png`
         )
+        return
+    }
+
+    //Override Options Generation
+    protected generateOptions(specifiedIdol: string = "", specifiedIds?: string): any 
+    {
+        const school:string = _.random(100) < 80 ? this.validSchool[0] : this.validSchool[1];
+        if(specifiedIds)
+        {
+            return {
+                qs: {
+                    ids: specifiedIds,
+                    expand_ur_pair: ""
+                }
+            };
+        }
+        else
+        {
+            return {
+                qs: {
+                    ordering: "random",
+                    rarity: "SSR,UR",
+                    expand_ur_pair: "",
+                    name:
+                    specifiedIdol ?
+                        specifiedIdol :
+                        school === "Otonokizaka Academy" ? "Minami Kotori,Kousaka Honoka" : "",
+                    idol_school: specifiedIdol ? "" : school
+                }
+            };
+        }
+    }
+
+    protected async getCard(specifiedIdol?:string, specifiedIds?:string): Promise<Card> {
+        var options: any = this.generateOptions(specifiedIdol, specifiedIds)
+        return new Promise((resolve, reject) => {
+            request.get("https://schoolido.lu/api/cards/", options, async (error, response, body) => {
+            if(error) {reject(error); return}
+            try 
+            {
+                var results: any = await JSON.parse(body).results;
+                _.forEach(results, (val: Card, index, col) => {
+                    if (val.ur_pair != null) {
+                      resolve(val);
+                    }
+                    else if(index === col.length)
+                    {
+                        reject("No UR Pairs Found!")
+                    }
+                });
+            } 
+            catch (err) 
+            {
+                // console.log(body)
+                reject(err);
+                return;
+            }
+            });
+        });
     }
 
     async assembleJimpCards() {
+        console.log(this.card.ur_pair.card.clean_ur, this.card.clean_ur)
         if (this.regular) {
             if (this.card.ur_pair.reverse_display) {
                 this.jimpCardLeft = await jimp.read("https:" + this.card.ur_pair.card.clean_ur);
@@ -71,7 +135,8 @@ export default class urpair extends normalCard {
     }
 
     async assembleAndWrite() {
-        this.assembleJimpCards()
-        this.writeData()
+        await this.assembleJimpCards()
+        await this.writeData()
+        return
     }
 }

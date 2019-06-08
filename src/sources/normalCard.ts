@@ -1,31 +1,25 @@
-import request from 'request'
+import * as request from 'request'
 import requestedImage from './requestedImage';
 import { Card } from '../lovelive';
-import _ from "lodash"
+import * as _ from "lodash"
 import * as crypto from 'crypto'
 import * as path from 'path'
 
 export default class normalCard extends requestedImage
 {
     public card: Card
-    public cardId?:string
-    public idol?:string
-    public regular?:boolean
     public cardUrl: string
-    public readonly random: boolean
 
-    private validSchool: Array<string> = [
+    protected validSchool: Array<string> = [
         "Uranohoshi Girls' High School",
         "Otonokizaka Academy"
     ];
 
-    constructor(random:boolean, idol?: string, cardId?:string, regular?:boolean)
+    constructor(public readonly random:boolean, public idol?: string, public cardId?:string, public regular?:boolean)
     {
         super(null)
-        this.cardId = cardId
-        this.regular = regular
-        this.random = random
-        this.cacheImage = true
+        // If regular is not defined, that means that it is not regular
+        this.regular = !(regular === undefined)
     }
 
     //Override
@@ -36,35 +30,40 @@ export default class normalCard extends requestedImage
         this.fileName = `${this.card.id}`
         this.outputFilePath = path.join(
             this.outputFolder,
-            `${this.fileName}.jpg`
+            `${this.fileName}-${!!this.regular}.jpg`
         )
         this.inputFilePath = path.join(
             this.inputFolder,
-            `${this.fileName}.${this.fileExt}`
+            `${this.fileName}-${!!this.regular}.${this.fileExt}`
         )
     }
 
     async setCard()
     {
         this.card = await this.getCard(this.idol, this.cardId)
+        return 
     }
 
     async assembleUrl()
     {
-        if(this.regular && this.card.clean_ur)
+        if(!!this.regular && this.card.clean_ur)
             this.cardUrl = `http:${this.card.clean_ur}`
         else
             this.cardUrl = `http:${this.card.clean_ur_idolized}`
+        return
     }
 
     async assembleAndWrite() 
     {
         await this.assembleUrl()
-        await request.get(this.cardUrl, {}, (err, res, body) => {this.imageData = body})
+        this.imageData = await new Promise((resolve, reject) => {
+            request.get(this.cardUrl, {encoding:null}, (err, res, body) => resolve(body))
+        })
         await this.writeData()
+        return;
     }
 
-    private generateOptions(specifiedIdol: string = "", specifiedIds?: string): any 
+    protected generateOptions(specifiedIdol: string = "", specifiedIds?: string): any 
     {
         const school:string = _.random(100) < 80 ? this.validSchool[0] : this.validSchool[1];
         if(specifiedIds)
@@ -91,7 +90,7 @@ export default class normalCard extends requestedImage
         }
     }
 
-    private async getCard(specifiedIdol?:string, specifiedIds?:string): Promise<Card> {
+    protected async getCard(specifiedIdol?:string, specifiedIds?:string): Promise<Card> {
         var options: any = this.generateOptions(specifiedIdol, specifiedIds)
         return new Promise((resolve, reject) => {
             request.get("https://schoolido.lu/api/cards/", options, async (error, response, body) => {
@@ -109,5 +108,5 @@ export default class normalCard extends requestedImage
             }
             });
         });
-      }
+    }
 }

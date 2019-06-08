@@ -9,8 +9,8 @@ const writeFileFs = util.promisify(fs.writeFile)
 
 export default class requestedImage {
     public imageData: Buffer
-    inputFolder: string
-    outputFolder: string
+    public inputFolder: string
+    public outputFolder: string
     outputFilePath: string
     fileName: string
     inputFilePath: string
@@ -18,8 +18,8 @@ export default class requestedImage {
 
     constructor(imageData: Buffer) {
         this.imageData = imageData
-        this.inputFolder = path.join(__dirname, "input")
-        this.outputFolder = path.join(__dirname, "output")
+        this.inputFolder = path.join(__dirname,"..", "input")
+        this.outputFolder = path.join(__dirname, "..", "output")
         this.fileName = ""
         this.cacheImage = false
     }
@@ -42,11 +42,13 @@ export default class requestedImage {
             this.inputFolder,
             `${this.fileName}.${this.fileExt}`
         )
+        return
     }
 
     async writeData()
     {
         this.setFileNames()
+        console.log(this.inputFilePath, this.outputFilePath)
         if(!fs.existsSync(this.inputFilePath))
             await writeFileFs(this.inputFilePath, this.imageData)
         return;
