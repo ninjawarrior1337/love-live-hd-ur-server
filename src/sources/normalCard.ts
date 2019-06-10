@@ -25,17 +25,16 @@ export default class normalCard extends requestedImage
     //Override
     async setFileNames()
     {
-        // let fileHash = crypto.createHash("sha256")
-        // fileHash.update(this.imageData)
         this.fileName = `${this.card.id}`
         this.outputFilePath = path.join(
             this.outputFolder,
-            `${this.fileName}-${!!this.regular}.jpg`
+            `${this.fileName}-${this.regular}.jpg`
         )
         this.inputFilePath = path.join(
             this.inputFolder,
-            `${this.fileName}-${!!this.regular}.${this.fileExt}`
+            `${this.fileName}-${this.regular}.${this.fileExt}`
         )
+        return;
     }
 
     async setCard()
@@ -57,7 +56,7 @@ export default class normalCard extends requestedImage
     {
         await this.assembleUrl()
         this.imageData = await new Promise((resolve, reject) => {
-            request.get(this.cardUrl, {encoding:null}, (err, res, body) => resolve(body))
+            request.get(this.cardUrl, {encoding:null}, (err, res, body) => {if(err) reject(err); resolve(body)})
         })
         await this.writeData()
         return;
